@@ -40,7 +40,7 @@ sh = service.spreadsheets()
 
 class SpreadsheetInfo(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    room_id = db.Column(db.String(256), unique=True, nullable=False)
+    room_id = db.Column(db.String(64), unique=True, nullable=False)
     spreadsheet_id = db.Column(db.String(256))
     sheet_id = db.Column(db.String(256))
 
