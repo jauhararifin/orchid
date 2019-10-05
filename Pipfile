@@ -16,6 +16,7 @@ oauth2client = "*"
 dateparser = "*"
 gunicorn = "*"
 line-bot-sdk = "*"
+pymysql = "*"
 
 [requires]
 python_version = "3.7"
