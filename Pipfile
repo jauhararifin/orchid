@@ -15,6 +15,7 @@ google-auth-oauthlib = "*"
 oauth2client = "*"
 dateparser = "*"
 gunicorn = "*"
+line-bot-sdk = "*"
 
 [requires]
 python_version = "3.7"

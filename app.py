@@ -1,4 +1,5 @@
 import os
+import json
 import datetime
 import dateparser
 import re
@@ -18,20 +19,21 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['LINE_BOT_ACCESS_TOKEN'] = os.environ['LINE_BOT_ACCESS_TOKEN']
-app.config['LINE_BOT_CHANNEL_SECRET'] = os.environ['LINE_BOT_CHANNEL_SECRET']
+app.config['LINE_BOT_CHANNEL_SECRET'] = os.environ['LINE_BOT_CHANNEL_SECRET'] 
 app.config['SERVICE_ACCOUNT_CREDENTIAL'] = os.environ['SERVICE_ACCOUNT_CREDENTIAL']
 
 line_bot_api = LineBotApi(app.config.get('LINE_BOT_ACCESS_TOKEN'))
 handler = WebhookHandler(app.config.get('LINE_BOT_CHANNEL_SECRET'))
 db = SQLAlchemy(app)
 
+
 scopes = [
     'https://www.googleapis.com/auth/drive',
     'https://www.googleapis.com/auth/drive.file',
     'https://www.googleapis.com/auth/spreadsheets',
 ]
-secret_file = os.path.join(os.getcwd(), 'experiment-f178b59878e3.json')
-credentials = ServiceAccountCredentials.from_json_keyfile_name(secret_file, scopes)
+credential_json = json.loads(app.config.get('SERVICE_ACCOUNT_CREDENTIAL'))
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(credential_json, scopes)
 service = discovery.build('sheets', 'v4', credentials=credentials)
 sh = service.spreadsheets()
 
