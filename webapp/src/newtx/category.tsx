@@ -1,28 +1,34 @@
-import React from 'react';
-import { MenuItem } from '@blueprintjs/core';
-import { Suggest } from '@blueprintjs/select';
+import React from 'react'
+import { MenuItem } from '@blueprintjs/core'
+import { Suggest } from '@blueprintjs/select'
+import { TAG_INPUT_VALUES } from '@blueprintjs/core/lib/esm/common/classes'
 
-export type ICategory = string;
+export type ICategory = string
 
 export interface CategoryInputProps {
-  name: string;
-  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
-  value: string;
-  placeholder?: string;
-  onItemSelect: (item: ICategory, event?: React.SyntheticEvent<HTMLElement>) => void;
+  name: string
+  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void
+  value: string
+  placeholder?: string
+  onItemSelect: (item: ICategory, event?: React.SyntheticEvent<HTMLElement>) => void
 }
 
-export const CategoryInput: React.FC<CategoryInputProps> = ({ name, onBlur, placeholder, onItemSelect }) => {
-  const CategorySuggest = Suggest.ofType<ICategory>();
-  const commonCategories = ['Food', 'Transportation', 'Utilities', 'Entertaiment', 'Rent', 'Vacation', 'Other'];
+export const CategoryInput: React.FC<CategoryInputProps> = ({ name, onBlur, placeholder, onItemSelect, value }) => {
+  const CategorySuggest = Suggest.ofType<ICategory>()
+  const commonCategories = ['Food', 'Transportation', 'Utilities', 'Entertaiment', 'Rent', 'Vacation', 'Other']
   return (
     <CategorySuggest
       fill={true}
-      inputProps={{ name, placeholder, onBlur }}
+      inputProps={{ name, placeholder, onBlur, value }}
       items={commonCategories}
+      createNewItemFromQuery={item => item}
+      createNewItemRenderer={(item: ICategory, _, handleClick) => (
+        <MenuItem icon="add" key={item} text={item} onClick={handleClick} />
+      )}
       inputValueRenderer={(item: ICategory) => item}
       itemRenderer={(item: ICategory, { handleClick }) => <MenuItem key={item} text={item} onClick={handleClick} />}
       onItemSelect={onItemSelect}
+      query={value}
     />
-  );
-};
+  )
+}

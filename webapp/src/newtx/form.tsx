@@ -1,23 +1,23 @@
-import React from 'react';
-import { FormikProps } from 'formik';
-import { FormGroup, InputGroup, NumericInput, Icon, TextArea, Intent, Button } from '@blueprintjs/core';
-import { TimestampInput } from './timestamp';
-import moment from 'moment';
-import { ChannelInput, IChannel } from './channel';
-import { ICategory, CategoryInput } from './category';
+import React from 'react'
+import { FormikProps } from 'formik'
+import { FormGroup, InputGroup, NumericInput, Icon, TextArea, Intent, Button } from '@blueprintjs/core'
+import { TimestampInput } from './timestamp'
+import moment from 'moment'
+import { ChannelInput, IChannel } from './channel'
+import { ICategory, CategoryInput } from './category'
 
 export interface NewTxData {
-  timestamp: number;
-  name: string;
-  value?: number;
-  currency: string;
-  channelSource: string;
-  channelDestination: string;
-  category: string;
-  description?: string;
+  timestamp: number
+  name: string
+  value?: number
+  currency: string
+  channelSource: string
+  channelDestination: string
+  category: string
+  description?: string
 }
 
-export type NewTxFormProps = FormikProps<NewTxData>;
+export type NewTxFormProps = FormikProps<NewTxData>
 
 export const NewTxForm: React.FC<NewTxFormProps> = ({
   handleChange,
@@ -30,7 +30,7 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
     <FormGroup label="Timestamp" labelFor="text-input" labelInfo="(required)">
       <TimestampInput
         name="timestamp"
-        value={moment().unix()}
+        value={values.timestamp}
         onChange={handleChange}
         onNowClick={() => setFieldValue('timestamp', moment().unix())}
       />
@@ -69,7 +69,7 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
           value={values.channelSource}
           placeholder="Source"
           onItemSelect={(item: IChannel) => {
-            setFieldValue('channelSource', item);
+            setFieldValue('channelSource', item)
           }}
         />
         <Icon style={{ marginLeft: 10, marginRight: 10 }} icon="arrow-right" />
@@ -79,7 +79,7 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
           value={values.channelDestination}
           placeholder="Destination"
           onItemSelect={(item: IChannel) => {
-            setFieldValue('channelDestination', item);
+            setFieldValue('channelDestination', item)
           }}
         />
       </div>
@@ -91,7 +91,7 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
         onBlur={handleBlur}
         value={values.category}
         onItemSelect={(item: ICategory) => {
-          setFieldValue('category', item);
+          setFieldValue('category', item)
         }}
         placeholder=""
       />
@@ -114,4 +114,4 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
       Submit
     </Button>
   </form>
-);
+)

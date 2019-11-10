@@ -1,12 +1,15 @@
-import React from 'react';
-import NewTransaction from "./newtx";
+import React, { useState } from 'react'
+import NewTransaction from './newtx'
+import FrequentTxs from './freqtx'
 
 const App: React.FC = () => {
-	return (
-		<div>
-			<NewTransaction />
-		</div>
-	);
+  const [initialTx, setInitialTx] = useState({})
+  return (
+    <div style={{ margin: '0 10px' }}>
+      <NewTransaction {...initialTx} />
+      <FrequentTxs onTxChoose={setInitialTx} />
+    </div>
+  )
 }
 
-export default App;
+export default App
