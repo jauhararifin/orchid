@@ -41,8 +41,27 @@ const NewTX: React.FC<NewTxProps> = ({
           category: category || 'Transportation'
         }}
         enableReinitialize={true}
-        onSubmit={(values, { setSubmitting }) => {
-          console.log(values)
+        onSubmit={async (values, { setSubmitting, resetForm }) => {
+          const newTx = {
+            ...values,
+            channel_source: values.channelSource,
+            channel_destination: values.channelDestination
+          }
+          try {
+            const response = await fetch('https://orchid-forest.herokuapp.com/api/v0/create-transaction', {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(newTx)
+            })
+            const json = await response.json()
+            alert(`New Transaction Added: ${json.id}`)
+            resetForm()
+          } catch (e) {
+            alert(`Got Error: ${e}`)
+          }
           setSubmitting(false)
         }}
         component={NewTxForm}
