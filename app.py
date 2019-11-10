@@ -1,12 +1,15 @@
 import os
 
 import flask
+import flask_cors
 import flask_sqlalchemy
 import sqlalchemy
 
 import ezlink
 
 app = flask.Flask(__name__)
+flask_cors.CORS(app)
+
 app.config['PORT'] = os.environ.get('PORT', 5000)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URI']
 app.config['EZLINK_EMAIL'] = os.environ['EZLINK_EMAIL']
