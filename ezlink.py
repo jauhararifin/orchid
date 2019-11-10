@@ -1,6 +1,7 @@
 import json
 import time
 from datetime import date, datetime, timedelta
+
 import simplygo
 
 
@@ -60,4 +61,3 @@ def _get_trip_amount_dict(trip):
 			'channel_destination': 'Expense',
 		})
 	return amount_detail
-

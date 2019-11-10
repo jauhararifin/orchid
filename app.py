@@ -133,4 +133,3 @@ def fetch_ezlink_transactions():
 if __name__ == '__main__':
 	port = int(app.config['PORT'])
 	app.run(threaded=True, port=port)
-
