@@ -1,287 +1,136 @@
 import os
-import json
-import datetime
-import dateparser
-import re
 
-from flask import Flask, request, abort
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm.exc import NoResultFound
+import flask
+import flask_sqlalchemy
+import sqlalchemy
 
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+import ezlink
 
-from oauth2client.service_account import ServiceAccountCredentials
-from apiclient import discovery
-
-app = Flask(__name__)
+app = flask.Flask(__name__)
+app.config['PORT'] = os.environ.get('PORT', 5000)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URI']
+app.config['EZLINK_EMAIL'] = os.environ['EZLINK_EMAIL']
+app.config['EZLINK_PASSWORD'] = os.environ['EZLINK_PASSWORD']
+app.config['EZLINK_CARD_UNIQUE_CODE'] = os.environ['EZLINK_PASSWORD']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['LINE_BOT_ACCESS_TOKEN'] = os.environ['LINE_BOT_ACCESS_TOKEN']
-app.config['LINE_BOT_CHANNEL_SECRET'] = os.environ['LINE_BOT_CHANNEL_SECRET'] 
-app.config['SERVICE_ACCOUNT_CREDENTIAL'] = os.environ['SERVICE_ACCOUNT_CREDENTIAL']
 
-line_bot_api = LineBotApi(app.config.get('LINE_BOT_ACCESS_TOKEN'))
-handler = WebhookHandler(app.config.get('LINE_BOT_CHANNEL_SECRET'))
-db = SQLAlchemy(app)
-
-
-scopes = [
-    'https://www.googleapis.com/auth/drive',
-    'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/spreadsheets',
-]
-credential_json = json.loads(app.config.get('SERVICE_ACCOUNT_CREDENTIAL'))
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(credential_json, scopes)
-service = discovery.build('sheets', 'v4', credentials=credentials)
-sh = service.spreadsheets()
-
-
-class SpreadsheetInfo(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
-    room_id = db.Column(db.String(64), unique=True, nullable=False)
-    spreadsheet_id = db.Column(db.String(256))
-    sheet_id = db.Column(db.String(256))
-
-
-db.create_all()
+db = flask_sqlalchemy.SQLAlchemy(app)
 
 
 @app.route('/')
 def hello():
-    return 'ok'
+	return 'ok'
 
 
-@app.route("/line/callback", methods=['POST'])
-def callback():
-    signature = request.headers['X-Line-Signature']
-    body = request.get_data(as_text=True)
-    try:
-        handler.handle(body, signature)
-    except InvalidSignatureError:
-        print("Invalid signature. Please check your channel access token/channel secret.")
-        abort(400)
-    return 'OK'
+class Transaction(db.Model):
+	id = db.Column(db.Integer(), primary_key=True)
+	timestamp = db.Column(db.Integer(), nullable=False)
+	name = db.Column(db.String(100), nullable=False)
+	value = db.Column(db.Float(), nullable=False)
+	currency = db.Column(db.String(3), nullable=False)
+	channel_source = db.Column(db.String(32), nullable=False)
+	channel_destination = db.Column(db.String(32), nullable=False)
+	category = db.Column(db.String(32), nullable=False)
+	description = db.Column(db.Text())
+
+	__tablename__ = 'orc_transactions_tab'
+
+	@property
+	def json(self):
+		return {
+			'id': self.id,
+			'timestamp': self.timestamp,
+			'name': self.name,
+			'value': self.value,
+			'currency': self.currency,
+			'channel_source': self.channel_source,
+			'channel_destination': self.channel_destination,
+			'category': self.category,
+			'description': self.description,
+		}
 
 
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    room_id = get_room_id(event)
-    message_text = event.message.text
-
-    match = re.match("orchid set spreadsheet ([0-9A-Za-z_-]+) ([0-9]+)", message_text)
-    if match:
-        spreadsheet_id = match[1]
-        sheet_id = match[2]
-        set_spreadsheet(room_id, spreadsheet_id, sheet_id)
-        setup_spreadsheet(spreadsheet_id, sheet_id)
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text='Spreadsheet ID updated'))
-        return
-
-    if message_text.startswith('orchid insert transaction'):
-        message_lines = message_text.splitlines()[1:]
-        field_mapping = {
-            'timestamp': 'timestamp',
-            'name': 'name',
-            'amount': 'amount',
-            'currency': 'currency',
-            'from': 'source_channel',
-            'to': 'destination_channel',
-            'category': 'category',
-            'description': 'description',
-        }
-        kwargs = {}
-        for part in message_lines:
-            if len(part) == 0:
-                continue
-            f = part.split()[0]
-            if f not in field_mapping:
-                continue
-            kwargs[field_mapping[f]] = part[len(f):].strip()
-        append_transaction(room_id, **kwargs)
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text='Transaction added'))
-    
-    if message_text == "orchid help":
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=
-        '''
-Setting spreadsheet
-```
-orchid set spreadsheet <spreadsheet-id> <sheet-id>
-```
-
-Insert Transaction
-```
-orchid insert transaction
-timestamp <timestamp>
-name <name>
-amount <amount>
-currency <currency>
-from <source-channel>
-to <destination-channel>
-category <category>
-description <description>
-```
-        '''))
-        return
+@app.route('/api/v0/get-last-transactions', methods=['GET'])
+def get_last_transactions():
+	query_set = Transaction.query.order_by(sqlalchemy.desc(Transaction.timestamp)).all()
+	return flask.jsonify([tx.json for tx in query_set])
 
 
-def get_room_id(event):
-    source = event.source
-    if source.type == 'user':
-        return 'userId:' + source.user_id
-    elif source.type == 'group':
-        return 'groupId:' + source.group_id
-    raise ValueError('Invalid Source Type')
+@app.route('/api/v0/get-frequent-transactions', methods=['GET'])
+def get_frequent_transactions():
+	query_set = Transaction.query.all()
+	frequency = {}
+	for tx in query_set:
+		key = (tx.name, tx.value, tx.currency, tx.channel_source, tx.channel_destination, tx.category)
+		frequency.setdefault(key, 0)
+		frequency[key] += 1
+	
+	frequencies = [(freq, {
+		'name': key[0],
+		'value': key[1],
+		'currency': key[2],
+		'channel_source': key[3],
+		'channel_destination': key[4],
+		'category': key[5],
+	}) for key, freq in frequency.items()]
+	frequencies = sorted(frequencies, key=lambda x: x[0], reverse=True)[:30]
+	frequencies = [freq[1] for freq in frequencies]
 
-def set_spreadsheet(room_id, spreadsheet_id, sheet_id):
-    try:
-        sheet_info = db.session.query(SpreadsheetInfo).filter(SpreadsheetInfo.room_id == room_id).one()
-        sheet_info.spreadsheet_id = spreadsheet_id
-        sheet_info.sheet_id = sheet_id
-    except NoResultFound:
-        db.session.add(SpreadsheetInfo(room_id=room_id, spreadsheet_id=spreadsheet_id, sheet_id=sheet_id))
-    db.session.commit()
+	return flask.jsonify(frequencies)
 
-def setup_spreadsheet(spreadsheet_id, sheet_id):
-    headers = ['Timestamp', 'Name', 'Amount', 'Currency', 'Source Channel', 'Destination Channel', 'Description', 'Category']
-    request = {
-        'requests': [
-            {
-                'updateSheetProperties': {
-                    'properties': {
-                        'sheetId': sheet_id,
-                        'gridProperties': {
-                            'frozenRowCount': 1,
-                        }
-                    },
-                    'fields': 'gridProperties.frozenRowCount',
-                },
-            },{
-                'updateCells': {
-                    'rows': [
-                        {
-                            'values': [{
-                                'userEnteredValue': {
-                                    'stringValue': header_name,
-                                }
-                            } for header_name in headers]
-                        }
-                    ],
-                    'fields': 'userEnteredValue',
-                    'range': {
-                        'sheetId': sheet_id,
-                        'startRowIndex': 0,
-                        'endRowIndex': 1,
-                        'startColumnIndex': 0,
-                        'endColumnIndex': len(headers),
-                    }
-                }
-            },{ 
-                'repeatCell': {
-                    'range': {
-                        'sheetId': sheet_id,
-                        'startRowIndex': 0,
-                        'endRowIndex': 1,
-                    },
-                    'cell': {
-                        'userEnteredFormat': {
-                            'textFormat': {
-                                'bold': True,
-                            }
-                        }
-                    },
-                    'fields': 'userEnteredFormat.textFormat.bold',
-                }
-            },{
-                'repeatCell': {
-                    'range': {
-                        'sheetId': sheet_id,
-                        'startRowIndex': 1,
-                        'startColumnIndex': 0,
-                        'endColumnIndex': 1,
-                    },
-                    'cell': {
-                        'userEnteredFormat': {
-                            'numberFormat': {
-                                'type': 'DATE_TIME',
-                                'pattern': 'dddd, dd/mm/yyyy at h:mm',
-                            }
-                        }
-                    },
-                    'fields': 'userEnteredFormat.numberFormat.type,userEnteredFormat.numberFormat.pattern',
-                }
-            },{
-                'repeatCell': {
-                    'range': {
-                        'sheetId': sheet_id,
-                        'startRowIndex': 1,
-                        'startColumnIndex': 2,
-                        'endColumnIndex': 3,
-                    },
-                    'cell': {
-                        'userEnteredFormat': {
-                            'numberFormat': {
-                                'type': 'NUMBER',
-                                'pattern': '####.#',
-                            }
-                        }
-                    },
-                    'fields': 'userEnteredFormat.numberFormat',
-                }
-            }
-        ]
-    }
-    sh.batchUpdate(spreadsheetId=spreadsheet_id, body=request).execute()
 
-def append_transaction(
-    room_id,
-    timestamp=None,
-    name='',
-    amount=0,
-    currency='SGD',
-    source_channel='Income',
-    destination_channel='Expense',
-    description='',
-    category='Other',
-):
-    timestamp = timestamp or datetime.datetime.now()
-    if isinstance(timestamp, str):
-        timestamp = dateparser.parse(timestamp)
-    google_sheet_timestamp = timestamp - datetime.datetime(1899,12,30)
-    timestamp = google_sheet_timestamp.days + google_sheet_timestamp.seconds / (60.0*60.0*24.0)
-    print(google_sheet_timestamp.days, google_sheet_timestamp.seconds / (60.0*60.0*24.0))
+@app.route('/api/v0/create-transaction', methods=['POST'])
+def create_transaction():
+	body = flask.request.json
+	tx = Transaction(
+		timestamp=body['timestamp'],
+		name=body['name'],
+		value=body['value'],
+		currency=body['currency'],
+		channel_source=body['channel_source'],
+		channel_destination=body['channel_destination'],
+		category=body['category'],
+		description=body.get('description'),
+	)
+	db.session.add(tx)
+	db.session.commit()
+	return flask.jsonify(tx.json)
 
-    spreadsheet_info = get_spreadsheet_info(room_id)
-    spreadsheet_id = spreadsheet_info.spreadsheet_id
-    sheet_id = spreadsheet_info.sheet_id
-    request = {
-        'requests': [
-            {
-                'appendCells': {
-                    'sheetId': sheet_id,
-                    'rows': [{
-                        'values': [
-                            {'userEnteredValue': {'numberValue': timestamp}},
-                            {'userEnteredValue': {'stringValue': name}},
-                            {'userEnteredValue': {'numberValue': amount}},
-                            {'userEnteredValue': {'stringValue': currency}},
-                            {'userEnteredValue': {'stringValue': source_channel}},
-                            {'userEnteredValue': {'stringValue': destination_channel}},
-                            {'userEnteredValue': {'stringValue': description}},
-                            {'userEnteredValue': {'stringValue': category}},
-                        ]
-                    }],
-                    'fields': 'userEnteredValue.numberValue,userEnteredValue.stringValue',
-                }
-            }
-        ]
-    }
-    sh.batchUpdate(spreadsheetId=spreadsheet_id, body=request).execute()
 
-def get_spreadsheet_info(room_id):
-    return db.session.query(SpreadsheetInfo).filter(SpreadsheetInfo.room_id == room_id).one()
+@app.route('/api/v0/delete-transaction', methods=['POST'])
+def delete_transaction():
+	body = flask.request.json
+	tx_id = body['transaction_id']
+	tx = Transaction.query.get(tx_id)
+	db.session.delete(tx)
+	db.session.commit()
+	return flask.jsonify(tx.json)
+
+
+@app.route('/api/v0/fetch-ezlink-transactions', methods=['POST'])
+def fetch_ezlink_transactions():
+	txs = ezlink.get_recent_transactions(
+		app.config['EZLINK_EMAIL'],
+		app.config['EZLINK_PASSWORD'],
+		app.config['EZLINK_CARD_UNIQUE_CODE'],
+	)
+	newly_added = []
+	for tx in txs:
+		exists_query = Transaction.query.filter(
+			Transaction.name==tx['name'],
+			Transaction.timestamp==tx['timestamp']
+		).exists()
+		exists = db.session.query(exists_query).scalar()
+		if exists:
+			break
+		new_tx = Transaction(**tx)
+		db.session.add(new_tx)
+		newly_added.append(new_tx.json)
+	db.session.commit()
+	return flask.jsonify(newly_added)
+
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(threaded=True, port=port)
+	port = int(app.config['PORT'])
+	app.run(threaded=True, port=port)
+
