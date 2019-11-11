@@ -48,7 +48,7 @@ def _get_trip_amount_dict(trip):
 	amount_detail = {
 		'value': float(trip['Fare'][1:]),
 		'currency': 'SGD',
-		'category': 'Transaction',
+		'category': 'Transportation',
 	}
 	if trip['TransactionType'] == 'T':
 		amount_detail.update({
