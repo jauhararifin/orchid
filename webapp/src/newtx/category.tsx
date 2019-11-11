@@ -1,7 +1,6 @@
 import React from 'react'
 import { MenuItem } from '@blueprintjs/core'
 import { Suggest } from '@blueprintjs/select'
-import { TAG_INPUT_VALUES } from '@blueprintjs/core/lib/esm/common/classes'
 
 export type ICategory = string
 

@@ -5,7 +5,7 @@ import FrequentTxs from './freqtx'
 const App: React.FC = () => {
   const [initialTx, setInitialTx] = useState({})
   return (
-    <div style={{ margin: '0 10px' }}>
+    <div style={{ margin: '10px 10px' }}>
       <NewTransaction {...initialTx} />
       <FrequentTxs onTxChoose={setInitialTx} />
     </div>

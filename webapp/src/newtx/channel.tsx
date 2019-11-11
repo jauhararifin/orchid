@@ -1,6 +1,6 @@
 import React from 'react'
 import { Suggest } from '@blueprintjs/select'
-import { MenuItem, Icon } from '@blueprintjs/core'
+import { MenuItem } from '@blueprintjs/core'
 
 export type IChannel = string
 
