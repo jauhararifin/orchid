@@ -31,7 +31,7 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
       <TimestampInput
         name="timestamp"
         value={values.timestamp}
-        onChange={handleChange}
+        onChange={ts => setFieldValue('timestamp', ts)}
         onNowClick={() => setFieldValue('timestamp', moment().unix())}
       />
     </FormGroup>
@@ -44,10 +44,9 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
       <div style={{ display: 'flex' }}>
         <div style={{ marginRight: 10, flexGrow: 1 }}>
           <NumericInput
-            name="value"
             value={values.value}
             onBlur={handleBlur}
-            onChange={handleChange}
+            onValueChange={val => setFieldValue('value', val)}
             allowNumericCharactersOnly={true}
             fill={true}
           />
