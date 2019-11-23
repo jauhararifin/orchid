@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { H1 } from '@blueprintjs/core'
 import { NewTxForm } from './form'
 import moment from 'moment'
+import Noty from 'noty'
 import { Formik } from 'formik'
 
 export interface NewTxProps {
@@ -42,13 +43,20 @@ const NewTX: React.FC<NewTxProps> = ({
         }}
         enableReinitialize={true}
         onSubmit={async (values, { setSubmitting, resetForm }) => {
-          const newTx = {
-            ...values,
-            channel_source: values.channelSource,
-            channel_destination: values.channelDestination
-          }
+          const newTx = [
+            {
+              name: values.name,
+              timestamp: values.timestamp,
+              value: values.value,
+              currency: values.currency,
+              category: values.category,
+              channel_source: values.channelSource,
+              channel_destination: values.channelDestination,
+              description: values.description
+            }
+          ]
           try {
-            const response = await fetch('https://orchid-forest.herokuapp.com/api/v0/create-transaction', {
+            const response = await fetch('https://orchid-forest.herokuapp.com/api/v0/create-transactions', {
               method: 'POST',
               headers: {
                 Accept: 'application/json',
@@ -57,10 +65,12 @@ const NewTX: React.FC<NewTxProps> = ({
               body: JSON.stringify(newTx)
             })
             const json = await response.json()
-            alert(`New Transaction Added: ${json.id}`)
+            const tx = json[0]
+
+            new Noty({ text: `New transaction Added: ${tx.id}`, layout: 'bottomCenter', type: 'success' }).show()
             resetForm()
           } catch (e) {
-            alert(`Got Error: ${e}`)
+            new Noty({ text: `Error adding transaction: ${e}`, layout: 'bottomCenter', type: 'alert' }).show()
           }
           setSubmitting(false)
         }}
