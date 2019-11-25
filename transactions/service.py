@@ -43,7 +43,7 @@ def _validate_create_txs(transactions: Iterable[Transaction]):
 	validator = cerberus.Validator({
 		'timestamp': {'required': True, 'type': 'integer', 'min': 0},
 		'name': {'required': True, 'type': 'string', 'minlength': 3, 'maxlength': 100},
-		'value': {'required': True, 'type': 'integer', 'min': 0, 'max': 1000000000000000},
+		'value': {'required': True, 'type': 'float', 'min': 0, 'max': 1000000000000000},
 		'currency': {'required': True, 'type': 'string', 'minlength': 3, 'maxlength': 3},
 		'channel_source': {'required': True, 'type': 'string', 'minlength': 1, 'maxlength': 32},
 		'channel_destination': {'required': True, 'type': 'string', 'minlength': 1, 'maxlength': 32},
