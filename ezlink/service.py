@@ -34,7 +34,7 @@ def sync_ezlink_transactions() -> Iterable[Transaction]:
 	)
 
 
-	def _get_all_card_unique_codes(username: str, password: str) -> Iterable[str]:
+def _get_all_card_unique_codes(username: str, password: str) -> Iterable[str]:
 	rider = simplygo.Ride(username, password)
 	card_info = rider.get_card_info()
 	return [card['UniqueCode'] for card in card_info]
