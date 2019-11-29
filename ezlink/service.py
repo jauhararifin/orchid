@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Iterable
 
+import pytz
 import simplygo
 
 from app import app
@@ -66,6 +67,8 @@ def _get_tx_by_trip(trip: dict, journey: dict, card_info: dict) -> dict:
 
 def _get_trip_timestamp_dict(trip: dict) -> dict:
 	date = datetime.strptime(trip['ExitTransactionDate'], '%Y-%m-%dT%H:%M:%S')
+	tzinfo = pytz.timezone('Asia/Singapore')
+	date.replace(tzinfo=tzinfo)
 	timestamp = int(time.mktime(date.timetuple()))
 	return {'timestamp': timestamp}
 
