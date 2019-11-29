@@ -12,11 +12,18 @@ from transactions.container import Transaction
 
 
 def sync_ezlink_transactions() -> Iterable[Transaction]:
-	txs = _get_recent_transactions(
+	card_unique_codes = _get_all_card_unique_codes(
 		app.config['EZLINK_EMAIL'],
 		app.config['EZLINK_PASSWORD'],
-		app.config['EZLINK_CARD_UNIQUE_CODE'],
 	)
+
+	txs = []
+	for uq in card_unique_codes:
+		txs += _get_recent_transactions(
+			app.config['EZLINK_EMAIL'],
+			app.config['EZLINK_PASSWORD'],
+			uq,
+		)
 	newly_added = []
 
 	names = [tx.name for tx in txs]
@@ -25,6 +32,12 @@ def sync_ezlink_transactions() -> Iterable[Transaction]:
 	return tx_store.insert_transactions(
 			tx for tx, exist in zip(txs, existances) if not exist
 	)
+
+
+	def _get_all_card_unique_codes(username: str, password: str) -> Iterable[str]:
+	rider = simplygo.Ride(username, password)
+	card_info = rider.get_card_info()
+	return [card['UniqueCode'] for card in card_info]
 
 
 def _get_recent_transactions(username: str, password: str, card_unique_code: str) -> Iterable[Transaction]:
