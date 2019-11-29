@@ -12,7 +12,7 @@ from transactions.container import Transaction
 
 
 def sync_ezlink_transactions() -> Iterable[Transaction]:
-	card_info = _get_all_card_unique_codes(
+	card_info = _get_all_card_info(
 		app.config['EZLINK_EMAIL'],
 		app.config['EZLINK_PASSWORD'],
 	)
