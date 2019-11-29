@@ -12,17 +12,17 @@ from transactions.container import Transaction
 
 
 def sync_ezlink_transactions() -> Iterable[Transaction]:
-	card_unique_codes = _get_all_card_unique_codes(
+	card_info = _get_all_card_unique_codes(
 		app.config['EZLINK_EMAIL'],
 		app.config['EZLINK_PASSWORD'],
 	)
 
 	txs = []
-	for uq in card_unique_codes:
+	for ci in card_info:
 		txs += _get_recent_transactions(
 			app.config['EZLINK_EMAIL'],
 			app.config['EZLINK_PASSWORD'],
-			uq,
+			ci,
 		)
 	newly_added = []
 
@@ -34,32 +34,32 @@ def sync_ezlink_transactions() -> Iterable[Transaction]:
 	)
 
 
-def _get_all_card_unique_codes(username: str, password: str) -> Iterable[str]:
+def _get_all_card_info(username: str, password: str) -> Iterable[str]:
 	rider = simplygo.Ride(username, password)
 	card_info = rider.get_card_info()
-	return [card['UniqueCode'] for card in card_info]
+	return card_info
 
 
-def _get_recent_transactions(username: str, password: str, card_unique_code: str) -> Iterable[Transaction]:
+def _get_recent_transactions(username: str, password: str, card_info: dict) -> Iterable[Transaction]:
 	rider = simplygo.Ride(username, password)
 	today = (date.today() - timedelta(days=1*365)).strftime('%d-%m-%Y')
-	histories = rider.get_transactions(card_unique_code, today)
+	histories = rider.get_transactions(card_info['UniqueCode'], today)
 	journeys = histories['Histories']
 	
 	transactions = []
 	for journey in journeys:
 		trips = journey['Trips']
 		for trip in trips:
-			tx_dict = _get_tx_by_trip(trip, journey)
+			tx_dict = _get_tx_by_trip(trip, journey, card_info)
 			transactions.append(Transaction(**tx_dict))
 
 	return transactions
 
 
-def _get_tx_by_trip(trip: dict, journey: dict) -> dict:
+def _get_tx_by_trip(trip: dict, journey: dict, card_info: dict) -> dict:
 	tx = _get_trip_name_dict(trip)
 	tx.update(_get_trip_timestamp_dict(trip))
-	tx.update(_get_trip_amount_dict(trip))
+	tx.update(_get_trip_amount_dict(trip, card_info))
 	tx['description'] = json.dumps(journey)
 	return tx
 
@@ -80,20 +80,21 @@ def _get_trip_name_dict(trip: dict) -> dict:
 	)}
 
 
-def _get_trip_amount_dict(trip: dict) -> dict:
+def _get_trip_amount_dict(trip: dict, card_info: dict) -> dict:
 	amount_detail = {
 		'value': float(trip['Fare'][1:]),
 		'currency': 'SGD',
 		'category': 'Transportation',
 	}
+	card_type = card_info['Description']
 	if trip['TransactionType'] == 'T':
 		amount_detail.update({
 			'channel_source': 'Cash',
-			'channel_destination': 'EZLink',
+			'channel_destination': card_type,
 		})
 	else:
 		amount_detail.update({
-			'channel_source': 'EZLink',
+			'channel_source': card_type,
 			'channel_destination': 'Expense',
 		})
 	return amount_detail
