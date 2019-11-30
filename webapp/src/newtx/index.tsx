@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { H1 } from '@blueprintjs/core'
 import { NewTxForm } from './form'
 import moment from 'moment'
-import Noty from 'noty'
 import { Formik } from 'formik'
 
 export interface NewTxProps {
@@ -13,6 +12,8 @@ export interface NewTxProps {
   channelSource?: string
   channelDestination?: string
   category?: string
+  onSubmitSuccess?: (id: number) => void
+  onSubmitFailed?: (e: any) => void
 }
 
 const NewTX: React.FC<NewTxProps> = ({
@@ -22,7 +23,9 @@ const NewTX: React.FC<NewTxProps> = ({
   currency,
   channelSource,
   channelDestination,
-  category
+  category,
+  onSubmitSuccess,
+  onSubmitFailed
 }) => {
   const [currTs, setCurrTs] = useState<number>(0)
   useEffect(() => setCurrTs(moment().unix()), [])
@@ -67,10 +70,10 @@ const NewTX: React.FC<NewTxProps> = ({
             const json = await response.json()
             const tx = json[0]
 
-            new Noty({ text: `New transaction Added: ${tx.id}`, layout: 'bottomCenter', type: 'success' }).show()
             resetForm()
+            onSubmitSuccess && onSubmitSuccess(tx.id)
           } catch (e) {
-            new Noty({ text: `Error adding transaction: ${e}`, layout: 'bottomCenter', type: 'alert' }).show()
+            onSubmitFailed && onSubmitFailed(e)
           }
           setSubmitting(false)
         }}
