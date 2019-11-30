@@ -12,6 +12,7 @@
     "@types/react-dom": "^16.9.4",
     "formik": "^2.0.3",
     "moment": "^2.24.0",
+    "normalize.css": "^8.0.1",
     "noty": "^3.2.0-beta",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
