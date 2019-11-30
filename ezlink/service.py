@@ -66,10 +66,9 @@ def _get_tx_by_trip(trip: dict, journey: dict, card_info: dict) -> dict:
 
 
 def _get_trip_timestamp_dict(trip: dict) -> dict:
+	print(trip['ExitTransactionDate'])
 	date = datetime.strptime(trip['ExitTransactionDate'], '%Y-%m-%dT%H:%M:%S')
-	tzinfo = pytz.timezone('Asia/Singapore')
-	date = date.replace(tzinfo=tzinfo)
-	timestamp = int(time.mktime(date.timetuple()))
+	timestamp = pytz.timezone('Asia/Singapore').localize(date).astimezone(pytz.UTC).timestamp()
 	return {'timestamp': timestamp}
 
 
