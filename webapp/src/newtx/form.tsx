@@ -82,16 +82,14 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <ChannelInput
           name="channelSource"
-          onBlur={handleBlur}
-          onChange={handleChange}
+          onInputChange={val => setFieldValue('channelSource', val)}
           value={values.channelSource}
           placeholder="Source"
         />
         <ArrowRightAlt style={{ marginLeft: 10, marginRight: 10 }} />
         <ChannelInput
           name="channelDestination"
-          onBlur={handleBlur}
-          onChange={handleChange}
+          onInputChange={val => setFieldValue('channelDestination', val)}
           value={values.channelDestination}
           placeholder="Destination"
         />

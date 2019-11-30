@@ -6,13 +6,12 @@ export type IChannel = string
 
 export interface ChannelInputProps {
   name: string
-  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
   value: string
   placeholder?: string
+  onInputChange: (value: string) => void
 }
 
-export const ChannelInput: React.FC<ChannelInputProps> = ({ name, onBlur, onChange, placeholder, value }) => {
+export const ChannelInput: React.FC<ChannelInputProps> = ({ name, onInputChange, placeholder, value }) => {
   const commonChannels = ['Cash', 'EZLink', 'DBS', 'Jenius', 'Expense', 'Income', 'Singtel', 'GoPay', 'Cheque']
   return (
     <div style={{ width: 150 }}>
@@ -20,6 +19,8 @@ export const ChannelInput: React.FC<ChannelInputProps> = ({ name, onBlur, onChan
         freeSolo
         disableClearable
         options={commonChannels}
+        onInputChange={(_, val) => onInputChange && onInputChange(val)}
+        value={value}
         renderInput={(params: RenderInputParams) => (
           <TextField
             {...params}
@@ -28,10 +29,13 @@ export const ChannelInput: React.FC<ChannelInputProps> = ({ name, onBlur, onChan
             margin="dense"
             variant="outlined"
             fullWidth
-            InputProps={{ ...params.InputProps, type: 'search', style: { padding: '0 5px' } }}
+            InputProps={{
+              ...params.InputProps,
+              name,
+              type: 'search',
+              style: { padding: '0 5px' }
+            }}
             style={{ padding: 0 }}
-            onBlur={onBlur}
-            onChange={onChange}
             value={value}
           />
         )}
