@@ -1,11 +1,10 @@
 import React from 'react'
 import { FormikProps } from 'formik'
-import { FormGroup, Icon } from '@blueprintjs/core'
-import Button from '@material-ui/core/button'
-import { MenuItem, TextField, Select } from '@material-ui/core'
+import { Button, MenuItem, TextField, Select, Typography } from '@material-ui/core'
+import { ArrowRightAlt } from '@material-ui/icons'
 import { TimestampInput } from './timestamp'
 import moment from 'moment'
-import { ChannelInput, IChannel } from './channel'
+import { ChannelInput } from './channel'
 
 export interface NewTxData {
   timestamp: number
@@ -43,9 +42,11 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
       onBlur={handleBlur}
       label="Name"
       fullWidth={true}
+      variant="outlined"
+      margin="dense"
     />
 
-    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
       <div style={{ marginRight: 10, flexGrow: 1 }}>
         <TextField
           name="value"
@@ -55,39 +56,47 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
           label="Amount"
           fullWidth={true}
           type="number"
+          variant="outlined"
+          margin="dense"
         />
       </div>
-      <div className="bp3-select" style={{ flexGrow: 0 }}>
-        <Select name="currency" value={values.currency} onChange={handleChange} onBlur={handleBlur}>
+      <div style={{ flexGrow: 0, marginTop: 8, marginBottom: 4 }}>
+        <Select
+          name="currency"
+          value={values.currency}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          variant="outlined"
+          margin="dense"
+        >
           <MenuItem value="SGD">SGD</MenuItem>
           <MenuItem value="IDR">IDR</MenuItem>
         </Select>
       </div>
     </div>
 
-    <FormGroup label="Channel" labelInfo="(required)" style={{ marginTop: 10 }}>
+    <div style={{ marginTop: 10, marginBottom: 5 }}>
+      <div>
+        <Typography variant="subtitle2">Channels</Typography>
+      </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <ChannelInput
           name="channelSource"
           onBlur={handleBlur}
+          onChange={handleChange}
           value={values.channelSource}
           placeholder="Source"
-          onItemSelect={(item: IChannel) => {
-            setFieldValue('channelSource', item)
-          }}
         />
-        <Icon style={{ marginLeft: 10, marginRight: 10 }} icon="arrow-right" />
+        <ArrowRightAlt style={{ marginLeft: 10, marginRight: 10 }} />
         <ChannelInput
           name="channelDestination"
           onBlur={handleBlur}
+          onChange={handleChange}
           value={values.channelDestination}
           placeholder="Destination"
-          onItemSelect={(item: IChannel) => {
-            setFieldValue('channelDestination', item)
-          }}
         />
       </div>
-    </FormGroup>
+    </div>
 
     <Select
       name="category"
@@ -96,6 +105,8 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
       onBlur={handleBlur}
       fullWidth={true}
       placeholder="Category"
+      variant="outlined"
+      margin="dense"
     >
       <MenuItem value="Food">Food</MenuItem>
       <MenuItem value="Transportation">Transportation</MenuItem>

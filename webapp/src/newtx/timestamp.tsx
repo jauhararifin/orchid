@@ -1,6 +1,6 @@
 import React from 'react'
-import { TextField } from '@material-ui/core'
-import { Button } from '@blueprintjs/core'
+import { IconButton, TextField } from '@material-ui/core'
+import { AccessTime } from '@material-ui/icons'
 import moment from 'moment'
 
 export interface TimestampInputProps {
@@ -23,6 +23,12 @@ export const TimestampInput: React.FC<TimestampInputProps> = ({ name, onBlur, va
         onBlur={onBlur}
       />
     </div>
-    <div>{onNowClick && <Button icon="time" minimal={true} onClick={onNowClick} />}</div>
+    <div>
+      {onNowClick && (
+        <IconButton onClick={onNowClick}>
+          <AccessTime />
+        </IconButton>
+      )}
+    </div>
   </div>
 )

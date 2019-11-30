@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { H1 } from '@blueprintjs/core'
 import { NewTxForm } from './form'
 import moment from 'moment'
 import { Formik } from 'formik'
+import { Typography } from '@material-ui/core'
 
 export interface NewTxProps {
   name?: string
@@ -32,7 +32,7 @@ const NewTX: React.FC<NewTxProps> = ({
 
   return (
     <div style={{ marginTop: 15 }}>
-      <H1>New Transaction</H1>
+      <Typography variant="h3">New Transaction</Typography>
 
       <Formik
         initialValues={{

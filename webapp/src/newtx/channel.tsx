@@ -1,35 +1,41 @@
 import React from 'react'
-import { Suggest } from '@blueprintjs/select'
-import { MenuItem } from '@blueprintjs/core'
+import { TextField } from '@material-ui/core'
+import Autocomplete, { RenderInputParams } from '@material-ui/lab/Autocomplete'
 
 export type IChannel = string
 
 export interface ChannelInputProps {
   name: string
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
   value: string
   placeholder?: string
-  onItemSelect: (item: IChannel, event?: React.SyntheticEvent<HTMLElement>) => void
 }
 
-export const ChannelInput: React.FC<ChannelInputProps> = ({ name, onBlur, placeholder, onItemSelect, value }) => {
-  const ChannelSuggest = Suggest.ofType<IChannel>()
+export const ChannelInput: React.FC<ChannelInputProps> = ({ name, onBlur, onChange, placeholder, value }) => {
   const commonChannels = ['Cash', 'EZLink', 'DBS', 'Jenius', 'Expense', 'Income', 'Singtel', 'GoPay', 'Cheque']
   return (
-    <ChannelSuggest
-      inputProps={{ name, placeholder, value, onBlur }}
-      items={commonChannels}
-      initialContent={value}
-      createNewItemFromQuery={item => item}
-      createNewItemRenderer={(item: IChannel, _, handleClick) => (
-        <MenuItem icon="add" key={item} text={item} onClick={handleClick} />
-      )}
-      inputValueRenderer={(item: IChannel) => item}
-      itemRenderer={(item: IChannel, { handleClick }) => (
-        <MenuItem icon="circle" key={item} text={item} onClick={handleClick} />
-      )}
-      onItemSelect={onItemSelect}
-      query={value}
-    />
+    <div style={{ width: 150 }}>
+      <Autocomplete
+        freeSolo
+        disableClearable
+        options={commonChannels}
+        renderInput={(params: RenderInputParams) => (
+          <TextField
+            {...params}
+            name={name}
+            label={placeholder}
+            margin="dense"
+            variant="outlined"
+            fullWidth
+            InputProps={{ ...params.InputProps, type: 'search', style: { padding: '0 5px' } }}
+            style={{ padding: 0 }}
+            onBlur={onBlur}
+            onChange={onChange}
+            value={value}
+          />
+        )}
+      />
+    </div>
   )
 }
