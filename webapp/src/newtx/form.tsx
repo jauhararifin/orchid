@@ -75,25 +75,22 @@ export const NewTxForm: React.FC<NewTxFormProps> = ({
       </div>
     </div>
 
-    <div style={{ marginTop: 10, marginBottom: 5 }}>
-      <div>
-        <Typography variant="subtitle2">Channels</Typography>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <ChannelInput
-          name="channelSource"
-          onInputChange={val => setFieldValue('channelSource', val)}
-          value={values.channelSource}
-          placeholder="Source"
-        />
-        <ArrowRightAlt style={{ marginLeft: 10, marginRight: 10 }} />
-        <ChannelInput
-          name="channelDestination"
-          onInputChange={val => setFieldValue('channelDestination', val)}
-          value={values.channelDestination}
-          placeholder="Destination"
-        />
-      </div>
+    <div style={{ marginTop: 8, marginBottom: 5, display: 'flex', alignItems: 'center' }}>
+      <ChannelInput
+        name="channelSource"
+        onInputChange={val => setFieldValue('channelSource', val)}
+        value={values.channelSource}
+        placeholder="Channel Source"
+        style={{ flexGrow: 1 }}
+      />
+      <ArrowRightAlt style={{ marginLeft: 10, marginRight: 10 }} />
+      <ChannelInput
+        name="channelDestination"
+        onInputChange={val => setFieldValue('channelDestination', val)}
+        value={values.channelDestination}
+        placeholder="Channel Destination"
+        style={{ flexGrow: 1 }}
+      />
     </div>
 
     <Select

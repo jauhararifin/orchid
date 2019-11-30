@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { CSSProperties } from 'react'
 import { TextField } from '@material-ui/core'
 import Autocomplete, { RenderInputParams } from '@material-ui/lab/Autocomplete'
 
@@ -9,12 +9,14 @@ export interface ChannelInputProps {
   value: string
   placeholder?: string
   onInputChange: (value: string) => void
+
+  style: CSSProperties
 }
 
-export const ChannelInput: React.FC<ChannelInputProps> = ({ name, onInputChange, placeholder, value }) => {
+export const ChannelInput: React.FC<ChannelInputProps> = ({ name, onInputChange, placeholder, value, style }) => {
   const commonChannels = ['Cash', 'EZLink', 'DBS', 'Jenius', 'Expense', 'Income', 'Singtel', 'GoPay', 'Cheque']
   return (
-    <div style={{ width: 150 }}>
+    <div style={style}>
       <Autocomplete
         freeSolo
         disableClearable

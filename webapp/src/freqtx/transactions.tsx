@@ -1,5 +1,6 @@
 import React from 'react'
-import { Card, H5, Divider, Icon, Tag, Intent } from '@blueprintjs/core'
+import { Typography, Chip, Paper } from '@material-ui/core'
+import { ArrowRightAlt } from '@material-ui/icons'
 
 export interface Transaction {
   name: string
@@ -21,26 +22,21 @@ interface TxTemplateProps {
 }
 
 const TxTemplate: React.FC<TxTemplateProps> = ({ tx, onClick }) => (
-  <Card style={{ padding: 10, marginTop: 10 }} interactive={true} onClick={onClick}>
-    <H5>
-      <Tag style={{ marginRight: 10 }} minimal={true}>
-        {tx.category}
-      </Tag>
-      {tx.name}
-    </H5>
+  <Paper style={{ padding: 10, marginTop: 10, border: '1px solid #c0c0c0' }} onClick={onClick} elevation={0}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Chip size="small" style={{ marginRight: 10 }} label={tx.category} />
+      <Typography variant="h6">{tx.name}</Typography>
+    </div>
     <div style={{ display: 'flex', alignItems: 'center' }}>
       <div>
-        <strong>{tx.value}</strong>
+        <Typography variant="subtitle2">{tx.value}</Typography>
       </div>
-      <Tag style={{ marginLeft: 10 }} intent={Intent.SUCCESS}>
-        {tx.currency}
-      </Tag>
-      <Divider />
-      <Tag>{tx.channelSource}</Tag>
-      <Icon style={{ marginRight: 10, marginLeft: 10 }} icon="arrow-right" />
-      <Tag>{tx.channelDestination}</Tag>
+      <Chip size="small" style={{ marginLeft: 10 }} color="primary" label={tx.currency} />
+      <Chip size="small" style={{ marginLeft: 10 }} label={tx.channelSource} />
+      <ArrowRightAlt style={{ marginRight: 10, marginLeft: 10 }} />
+      <Chip size="small" label={tx.channelDestination} />
     </div>
-  </Card>
+  </Paper>
 )
 
 export const TransactionTemplates: React.FC<TransactionTemplatesProps> = ({ transactions, onTxChoose }) => (

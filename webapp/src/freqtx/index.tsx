@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { H1 } from '@blueprintjs/core'
 import { TransactionTemplates, Transaction } from './transactions'
+import { Typography } from '@material-ui/core'
 
 export interface FrequentTxsProps {
   onTxChoose: (tx: Transaction) => void
@@ -23,7 +23,7 @@ const FrequentTxs: React.FC<FrequentTxsProps> = ({ onTxChoose }) => {
 
   return (
     <div style={{ marginTop: 15 }}>
-      <H1>Frequent Transactions</H1>
+      <Typography variant="h3">Frequent Transactions</Typography>
       <TransactionTemplates onTxChoose={onTxChoose} transactions={txs} />
     </div>
   )
