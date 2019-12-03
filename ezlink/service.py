@@ -49,7 +49,7 @@ def _get_recent_transactions(username: str, password: str, card_info: dict) -> I
 	
 	transactions = []
 	for journey in journeys:
-		trips = journey['Trips']
+		trips = journey.get('Trips', [])
 		for trip in trips:
 			tx_dict = _get_tx_by_trip(trip, journey, card_info)
 			transactions.append(Transaction(**tx_dict))
@@ -66,7 +66,6 @@ def _get_tx_by_trip(trip: dict, journey: dict, card_info: dict) -> dict:
 
 
 def _get_trip_timestamp_dict(trip: dict) -> dict:
-	print(trip['ExitTransactionDate'])
 	date = datetime.strptime(trip['ExitTransactionDate'], '%Y-%m-%dT%H:%M:%S')
 	timestamp = pytz.timezone('Asia/Singapore').localize(date).astimezone(pytz.UTC).timestamp()
 	return {'timestamp': timestamp}
